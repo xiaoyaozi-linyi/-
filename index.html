@@ -50,11 +50,14 @@
         </section>
         <section id="products">
             <h2>商品管理</h2>
+            <input type="text" id="searchProduct" placeholder="搜索商品">
             <form id="productForm">
                 <input type="hidden" id="pindex">
                 <input type="text" id="pname" placeholder="名称" required>
                 <input type="number" id="pprice" placeholder="价格" required>
-                <input type="text" id="pcategory" placeholder="分类" required>
+                <select id="pcategory" required>
+                    <option value="" disabled selected>选择分类</option>
+                </select>
                 <input type="number" id="pstock" placeholder="库存" required>
                 <button type="submit">保存</button>
                 <button type="button" id="cancelEdit" class="hidden">取消</button>
@@ -138,10 +141,13 @@ const productForm=document.getElementById('productForm');
 const cancelEdit=document.getElementById('cancelEdit');
 const productTable=document.querySelector('#productTable tbody');
 const productGridAdmin=document.getElementById('productGridAdmin');
+const searchInput=document.getElementById('searchProduct');
 function renderProducts(){
     productTable.innerHTML='';
     productGridAdmin.innerHTML='';
+    const keyword=searchInput.value.trim();
     products.forEach((p,i)=>{
+        if(keyword && !p.name.includes(keyword)) return;
         const tr=document.createElement('tr');
         tr.innerHTML=`<td>${p.name}</td><td>${p.price}</td><td>${p.category}</td><td>${p.stock}</td><td><button data-edit="${i}">编辑</button> <button data-del="${i}">删除</button></td>`;
         productTable.appendChild(tr);
@@ -174,11 +180,26 @@ function handleProductAction(e){
 productTable.addEventListener('click',handleProductAction);
 productGridAdmin.addEventListener('click',handleProductAction);
 cancelEdit.addEventListener('click',()=>{editingIndex=null;productForm.reset();cancelEdit.classList.add('hidden');});
+searchInput.addEventListener('input',renderProducts);
 
 // 分类管理
 const categoryList=document.getElementById('categoryList');
 const categoryForm=document.getElementById('categoryForm');
-function renderCategories(){categoryList.innerHTML='';categories.forEach((c,i)=>{const li=document.createElement('li');li.innerHTML=`${c} <button data-del="${i}">删除</button>`;categoryList.appendChild(li);});localStorage.setItem('categories',JSON.stringify(categories));}
+const categorySelect=document.getElementById('pcategory');
+function renderCategoryOptions(){
+    categorySelect.innerHTML = '<option value="" disabled selected>选择分类</option>' +
+        categories.map(c => `<option value="${c}">${c}</option>`).join('');
+}
+function renderCategories(){
+    categoryList.innerHTML='';
+    categories.forEach((c,i)=>{
+        const li=document.createElement('li');
+        li.innerHTML=`${c} <button data-del="${i}">删除</button>`;
+        categoryList.appendChild(li);
+    });
+    localStorage.setItem('categories',JSON.stringify(categories));
+    renderCategoryOptions();
+}
 categoryForm.addEventListener('submit',e=>{e.preventDefault();categories.push(cname.value);categoryForm.reset();renderCategories();});
 categoryList.addEventListener('click',e=>{if(e.target.dataset.del){categories.splice(e.target.dataset.del,1);renderCategories();}});
 
@@ -217,8 +238,8 @@ function updateChart(){const sums={};orders.forEach(o=>{const d=o.time.split(' '
 const askBtn=document.getElementById('askAi');const aiInput=document.getElementById('aiInput');const aiResp=document.getElementById('aiResponse');const API_KEY='sk-JQqwqFeMGUGOtJM6PGy2N3KxuPGEtvbLEyBNoZOurLSKh3Fz';
 askBtn.onclick=async()=>{aiResp.textContent='加载中...';try{const res=await fetch('https://xinyiyuan1688.top/v1',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+API_KEY},body:JSON.stringify({model:'o3',messages:[{role:'user',content:aiInput.value}]})});const data=await res.json();aiResp.textContent=JSON.stringify(data);}catch(e){aiResp.textContent='请求失败';}};
 
-renderProducts();
 renderCategories();
+renderProducts();
 renderMembers();
 renderOrders();
 renderInventory();
