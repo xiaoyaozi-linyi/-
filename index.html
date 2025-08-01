@@ -1,311 +1,194 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>POS System</title>
+    <title>简易收银系统</title>
     <style>
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #f8f8f8;
-}
-.container {
-    display: flex;
-    height: 100vh;
-}
-nav {
-    background: #ffd400;
-    color: #000;
-    width: 200px;
-    transition: width 0.3s;
-    overflow: hidden;
-    position: relative;
-}
-nav.compact { width: 60px; }
-nav ul { list-style: none; padding: 0; }
-nav li {
-    padding: 15px;
-    cursor: pointer;
-}
-nav li:hover { background: #fff176; }
-#toggle {
-    position: absolute;
-    top: 0;
-    right: 0;
-    border: none;
-    background: none;
-    font-size: 20px;
-    cursor: pointer;
-}
-main { flex: 1; padding: 20px; overflow-y: auto; }
-section { display: none; }
-section.active { display: block; }
-#productGrid {
-    display: flex;
-    flex-wrap: wrap;
-}
-.product-item {
-    border: 1px solid #ccc;
-    padding: 10px;
-    margin: 5px;
-    width: 100px;
-    text-align: center;
-}
-.inventory-ok { background: #e8f5e9; }
-.inventory-mid { background: #fffde7; }
-.inventory-low { background: #ffebee; }
-@media (max-width:600px){
-    nav.compact{ width:0; }
-}
-</style>
+        body{margin:0;font-family:Arial;background:#f8f8f8;color:#000}
+        .container{display:flex;height:100vh}
+        nav{background:#ffd400;width:200px;transition:width .3s;overflow:hidden;position:relative}
+        nav.compact{width:60px}
+        nav ul{list-style:none;padding:0;margin:0}
+        nav li{padding:12px;cursor:pointer}
+        nav li:hover{background:#fff176}
+        #toggle{position:absolute;top:0;right:0;font-size:20px;border:none;background:none;cursor:pointer}
+        main{flex:1;overflow-y:auto;padding:10px}
+        section{display:none}
+        section.active{display:block}
+        table{width:100%;border-collapse:collapse;margin-top:10px}
+        th,td{border:1px solid #ccc;padding:5px;text-align:left}
+        #productGrid{display:flex;flex-wrap:wrap;gap:5px}
+        .product-item{border:1px solid #ccc;padding:5px;width:80px;cursor:pointer;text-align:center}
+        .inventory-ok{background:#e8f5e9}
+        .inventory-mid{background:#fffde7}
+        .inventory-low{background:#ffebee}
+        #cart div{margin-bottom:5px}
+        .hidden{display:none}
+        @media(max-width:600px){nav.compact{width:0}}
+    </style>
 </head>
 <body>
-    <div class="container">
-        <nav id="sidebar" class="expanded">
-            <button id="toggle">☰</button>
-            <ul>
-                <li data-target="dashboard">数据看板</li>
-                <li data-target="products">商品管理</li>
-                <li data-target="orders">订单管理</li>
-                <li data-target="categories">分类管理</li>
-                <li data-target="members">会员管理</li>
-                <li data-target="cashier">收银台</li>
-                <li data-target="inventory">进销存</li>
-                <li data-target="ai">AI经营策略</li>
-            </ul>
-        </nav>
-        <main id="content">
-            <section id="dashboard" class="active">
-                <canvas id="salesChart"></canvas>
-            </section>
-            <section id="products">
-                <h2>商品管理</h2>
-                <form id="productForm">
-                    <input type="text" id="pname" placeholder="名称" required>
-                    <input type="number" id="pprice" placeholder="价格" required>
-                    <input type="text" id="pcategory" placeholder="分类" required>
-                    <input type="number" id="pstock" placeholder="库存" required>
-                    <button type="submit">新增商品</button>
-                </form>
-                <table id="productTable">
-                    <thead><tr><th>名称</th><th>价格</th><th>分类</th><th>库存</th><th>操作</th></tr></thead>
-                    <tbody></tbody>
-                </table>
-            </section>
-            <section id="orders">
-                <h2>订单管理</h2>
-                <table id="orderTable">
-                    <thead><tr><th>订单号</th><th>时间</th><th>金额</th><th>状态</th></tr></thead>
-                    <tbody></tbody>
-                </table>
-            </section>
-            <section id="categories">
-                <h2>分类管理</h2>
-                <form id="categoryForm">
-                    <input type="text" id="cname" placeholder="分类名" required>
-                    <button type="submit">新增分类</button>
-                </form>
-                <ul id="categoryList"></ul>
-            </section>
-            <section id="members">
-                <h2>会员管理</h2>
-                <form id="memberForm">
-                    <input type="text" id="mname" placeholder="姓名" required>
-                    <input type="tel" id="mphone" placeholder="电话" required>
-                    <button type="submit">新增会员</button>
-                </form>
-                <table id="memberTable">
-                    <thead><tr><th>姓名</th><th>电话</th></tr></thead>
-                    <tbody></tbody>
-                </table>
-            </section>
-            <section id="cashier">
-                <h2>收银台</h2>
-                <div id="productGrid"></div>
-                <div id="cart"></div>
-            </section>
-            <section id="inventory">
-                <h2>进销存管理</h2>
-                <table id="inventoryTable">
-                    <thead><tr><th>ID</th><th>名称</th><th>库存</th><th>状态</th></tr></thead>
-                    <tbody></tbody>
-                </table>
-            </section>
-            <section id="ai">
-                <h2>AI经营策略</h2>
-                <textarea id="aiInput" placeholder="输入问题"></textarea>
-                <button id="askAi">发送</button>
-                <pre id="aiResponse"></pre>
-            </section>
-        </main>
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-const sections = document.querySelectorAll('main section');
-const sidebar = document.getElementById('sidebar');
-const toggleBtn = document.getElementById('toggle');
-const salesChartCtx = document.getElementById('salesChart');
-let products = JSON.parse(localStorage.getItem('products')||'[]');
-let categories = JSON.parse(localStorage.getItem('categories')||'[]');
-let members = JSON.parse(localStorage.getItem('members')||'[]');
-let orders = JSON.parse(localStorage.getItem('orders')||'[]');
-function showSection(id){
-    sections.forEach(s=>s.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-}
-sidebar.addEventListener('click',e=>{
-    if(e.target.dataset.target){
-        showSection(e.target.dataset.target);
-    }
-});
-toggleBtn.addEventListener('click',()=>{
-    sidebar.classList.toggle('compact');
-});
-// product management
+<div class="container">
+    <nav id="sidebar">
+        <button id="toggle">☰</button>
+        <ul>
+            <li data-target="dashboard">数据看板</li>
+            <li data-target="products">商品管理</li>
+            <li data-target="orders">订单管理</li>
+            <li data-target="categories">分类管理</li>
+            <li data-target="members">会员管理</li>
+            <li data-target="cashier">收银台</li>
+            <li data-target="inventory">进销存</li>
+            <li data-target="ai">AI经营策略</li>
+        </ul>
+    </nav>
+    <main>
+        <section id="dashboard" class="active">
+            <canvas id="salesChart" height="200"></canvas>
+        </section>
+        <section id="products">
+            <h2>商品管理</h2>
+            <form id="productForm">
+                <input type="hidden" id="pindex">
+                <input type="text" id="pname" placeholder="名称" required>
+                <input type="number" id="pprice" placeholder="价格" required>
+                <input type="text" id="pcategory" placeholder="分类" required>
+                <input type="number" id="pstock" placeholder="库存" required>
+                <button type="submit">保存</button>
+                <button type="button" id="cancelEdit" class="hidden">取消</button>
+            </form>
+            <table id="productTable">
+                <thead><tr><th>名称</th><th>价格</th><th>分类</th><th>库存</th><th>操作</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </section>
+        <section id="orders">
+            <h2>订单管理</h2>
+            <button id="exportCsv">导出CSV</button>
+            <table id="orderTable">
+                <thead><tr><th>订单号</th><th>时间</th><th>金额</th><th>状态</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </section>
+        <section id="categories">
+            <h2>分类管理</h2>
+            <form id="categoryForm">
+                <input type="text" id="cname" placeholder="分类名" required>
+                <button type="submit">新增分类</button>
+            </form>
+            <ul id="categoryList"></ul>
+        </section>
+        <section id="members">
+            <h2>会员管理</h2>
+            <form id="memberForm">
+                <input type="text" id="mname" placeholder="姓名" required>
+                <input type="tel" id="mphone" placeholder="电话" required>
+                <button type="submit">新增会员</button>
+            </form>
+            <table id="memberTable">
+                <thead><tr><th>姓名</th><th>电话</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </section>
+        <section id="cashier">
+            <h2>收银台</h2>
+            <div id="productGrid"></div>
+            <div id="cart"></div>
+            <div>总计: <span id="totalPrice">0</span></div>
+            <button id="checkout">结账</button>
+        </section>
+        <section id="inventory">
+            <h2>进销存管理</h2>
+            <table id="inventoryTable">
+                <thead><tr><th>ID</th><th>名称</th><th>库存</th><th>状态</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </section>
+        <section id="ai">
+            <h2>AI经营策略</h2>
+            <textarea id="aiInput" placeholder="输入问题"></textarea>
+            <button id="askAi">发送</button>
+            <pre id="aiResponse"></pre>
+        </section>
+    </main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const sections=document.querySelectorAll('main section');
+const sidebar=document.getElementById('sidebar');
+const toggleBtn=document.getElementById('toggle');
+let products=JSON.parse(localStorage.getItem('products')||'[]');
+let categories=JSON.parse(localStorage.getItem('categories')||'[]');
+let members=JSON.parse(localStorage.getItem('members')||'[]');
+let orders=JSON.parse(localStorage.getItem('orders')||'[]');
+let editingIndex=null;
+let cart=[];
+
+function showSection(id){sections.forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+
+sidebar.addEventListener('click',e=>{if(e.target.dataset.target)showSection(e.target.dataset.target);});
+
+toggleBtn.addEventListener('click',()=>{sidebar.classList.toggle('compact');});
+
+// 产品管理
 const productForm=document.getElementById('productForm');
-const productTable=document.getElementById('productTable').querySelector('tbody');
-function renderProducts(){
-    productTable.innerHTML='';
-    products.forEach((p,i)=>{
-        const tr=document.createElement('tr');
-        tr.innerHTML=`<td>${p.name}</td><td>${p.price}</td><td>${p.category}</td><td>${p.stock}</td><td><button data-del="${i}">删除</button></td>`;
-        productTable.appendChild(tr);
-    });
-    renderProductGrid();
-    localStorage.setItem('products',JSON.stringify(products));
-}
-productForm.addEventListener('submit',e=>{
-    e.preventDefault();
-    products.push({name:pname.value,price:pprice.value,category:pcategory.value,stock:+pstock.value});
-    productForm.reset();
-    renderProducts();
-});
-productTable.addEventListener('click',e=>{
-    if(e.target.dataset.del){
-        products.splice(e.target.dataset.del,1);
-        renderProducts();
-    }
-});
-// order management
-const orderTable=document.getElementById('orderTable').querySelector('tbody');
-function renderOrders(){
-    orderTable.innerHTML='';
-    orders.forEach(o=>{
-        const tr=document.createElement('tr');
-        tr.innerHTML=`<td>${o.id}</td><td>${o.time}</td><td>${o.total}</td><td>${o.status}</td>`;
-        orderTable.appendChild(tr);
-    });
-    localStorage.setItem('orders',JSON.stringify(orders));
-}
-// categories
+const cancelEdit=document.getElementById('cancelEdit');
+const productTable=document.querySelector('#productTable tbody');
+function renderProducts(){productTable.innerHTML='';products.forEach((p,i)=>{const tr=document.createElement('tr');tr.innerHTML=`<td>${p.name}</td><td>${p.price}</td><td>${p.category}</td><td>${p.stock}</td><td><button data-edit="${i}">编辑</button> <button data-del="${i}">删除</button></td>`;productTable.appendChild(tr);});localStorage.setItem('products',JSON.stringify(products));renderProductGrid();renderInventory();}
+productForm.addEventListener('submit',e=>{e.preventDefault();const obj={name:pname.value,price:+pprice.value,category:pcategory.value,stock:+pstock.value};if(editingIndex!==null){products[editingIndex]=obj;editingIndex=null;cancelEdit.classList.add('hidden');}else{products.push(obj);}productForm.reset();renderProducts();});
+productTable.addEventListener('click',e=>{if(e.target.dataset.del){products.splice(e.target.dataset.del,1);renderProducts();}if(e.target.dataset.edit){const p=products[e.target.dataset.edit];pname.value=p.name;pprice.value=p.price;pcategory.value=p.category;pstock.value=p.stock;editingIndex=e.target.dataset.edit;cancelEdit.classList.remove('hidden');showSection('products');}});
+cancelEdit.addEventListener('click',()=>{editingIndex=null;productForm.reset();cancelEdit.classList.add('hidden');});
+
+// 分类管理
 const categoryList=document.getElementById('categoryList');
 const categoryForm=document.getElementById('categoryForm');
-function renderCategories(){
-    categoryList.innerHTML='';
-    categories.forEach((c,i)=>{
-        const li=document.createElement('li');
-        li.textContent=c;
-        li.innerHTML+=` <button data-del="${i}">删除</button>`;
-        categoryList.appendChild(li);
-    });
-    localStorage.setItem('categories',JSON.stringify(categories));
-}
-categoryForm.addEventListener('submit',e=>{
-    e.preventDefault();
-    categories.push(cname.value);
-    categoryForm.reset();
-    renderCategories();
-});
-categoryList.addEventListener('click',e=>{
-    if(e.target.dataset.del){
-        categories.splice(e.target.dataset.del,1);
-        renderCategories();
-    }
-});
-// members
-const memberTable=document.getElementById('memberTable').querySelector('tbody');
+function renderCategories(){categoryList.innerHTML='';categories.forEach((c,i)=>{const li=document.createElement('li');li.innerHTML=`${c} <button data-del="${i}">删除</button>`;categoryList.appendChild(li);});localStorage.setItem('categories',JSON.stringify(categories));}
+categoryForm.addEventListener('submit',e=>{e.preventDefault();categories.push(cname.value);categoryForm.reset();renderCategories();});
+categoryList.addEventListener('click',e=>{if(e.target.dataset.del){categories.splice(e.target.dataset.del,1);renderCategories();}});
+
+// 会员管理
+const memberTable=document.querySelector('#memberTable tbody');
 const memberForm=document.getElementById('memberForm');
-function renderMembers(){
-    memberTable.innerHTML='';
-    members.forEach((m,i)=>{
-        const tr=document.createElement('tr');
-        tr.innerHTML=`<td>${m.name}</td><td>${m.phone}</td>`;
-        memberTable.appendChild(tr);
-    });
-    localStorage.setItem('members',JSON.stringify(members));
-}
-memberForm.addEventListener('submit',e=>{
-    e.preventDefault();
-    members.push({name:mname.value,phone:mphone.value});
-    memberForm.reset();
-    renderMembers();
-});
-// cashier
+function renderMembers(){memberTable.innerHTML='';members.forEach((m,i)=>{const tr=document.createElement('tr');tr.innerHTML=`<td>${m.name}</td><td>${m.phone}</td>`;memberTable.appendChild(tr);});localStorage.setItem('members',JSON.stringify(members));}
+memberForm.addEventListener('submit',e=>{e.preventDefault();members.push({name:mname.value,phone:mphone.value});memberForm.reset();renderMembers();});
+
+// 订单管理
+const orderTable=document.querySelector('#orderTable tbody');
+function renderOrders(){orderTable.innerHTML='';orders.forEach(o=>{const tr=document.createElement('tr');tr.innerHTML=`<td>${o.id}</td><td>${o.time}</td><td>${o.total}</td><td>${o.status}</td>`;orderTable.appendChild(tr);});localStorage.setItem('orders',JSON.stringify(orders));updateChart();}
+
+document.getElementById('exportCsv').addEventListener('click',()=>{let csv='id,time,total,status\n';orders.forEach(o=>{csv+=`${o.id},${o.time},${o.total},${o.status}\n`;});const blob=new Blob([csv]);const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='orders.csv';a.click();});
+
+// 收银
 const productGrid=document.getElementById('productGrid');
 const cartDiv=document.getElementById('cart');
-let cart=[];
-function renderProductGrid(){
-    productGrid.innerHTML='';
-    products.forEach((p,i)=>{
-        const div=document.createElement('div');
-        div.className='product-item';
-        div.textContent=p.name;
-        div.addEventListener('click',()=>addToCart(i));
-        productGrid.appendChild(div);
-    });
-}
-function addToCart(i){
-    const item=cart.find(c=>c.index===i);
-    if(item){item.qty++;} else {cart.push({index:i,qty:1});}
-    renderCart();
-}
-function renderCart(){
-    cartDiv.innerHTML='';
-    cart.forEach((c,idx)=>{
-        const p=products[c.index];
-        const div=document.createElement('div');
-        div.textContent=`${p.name} x${c.qty}`;
-        const btn=document.createElement('button');
-        btn.textContent='移除';
-        btn.onclick=()=>{cart.splice(idx,1);renderCart();};
-        div.appendChild(btn);
-        cartDiv.appendChild(div);
-    });
-}
-// inventory
-const inventoryTable=document.getElementById('inventoryTable').querySelector('tbody');
-function renderInventory(){
-    inventoryTable.innerHTML='';
-    products.forEach((p,i)=>{
-        let statusClass='inventory-ok';
-        if(p.stock<=20){statusClass='inventory-low';}
-        else if(p.stock<=40){statusClass='inventory-mid';}
-        const tr=document.createElement('tr');
-        tr.innerHTML=`<td>${i}</td><td>${p.name}</td><td>${p.stock}</td><td class="${statusClass}">${p.stock}</td>`;
-        inventoryTable.appendChild(tr);
-    });
-}
-// data board
-let salesChart=new Chart(salesChartCtx,{type:'bar',data:{labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],datasets:[{label:'销售额',data:[12,19,3,5,2,3,7],backgroundColor:'#ffd400'}]},options:{}});
-// ai
-const askBtn=document.getElementById('askAi');
-const aiInput=document.getElementById('aiInput');
-const aiResp=document.getElementById('aiResponse');
-const API_KEY='sk-JQqwqFeMGUGOtJM6PGy2N3KxuPGEtvbLEyBNoZOurLSKh3Fz';
-async function askAI(){
-    const res=await fetch('https://xinyiyuan1688.top/v1',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+API_KEY},body:JSON.stringify({model:'o3',messages:[{role:'user',content:aiInput.value}]})});
-    const data=await res.json();
-    aiResp.textContent=JSON.stringify(data);
-}
-askBtn.addEventListener('click',askAI);
-// init
+const totalPriceSpan=document.getElementById('totalPrice');
+const checkoutBtn=document.getElementById('checkout');
+function renderProductGrid(){productGrid.innerHTML='';products.forEach((p,i)=>{const div=document.createElement('div');div.className='product-item';div.textContent=p.name;div.onclick=()=>addToCart(i);productGrid.appendChild(div);});}
+function addToCart(i){const item=cart.find(c=>c.index===i);if(item){item.qty++;}else{cart.push({index:i,qty:1});}renderCart();}
+function renderCart(){cartDiv.innerHTML='';let total=0;cart.forEach((c,idx)=>{const p=products[c.index];const div=document.createElement('div');div.textContent=`${p.name} x${c.qty}`;total+=p.price*c.qty;const btn=document.createElement('button');btn.textContent='移除';btn.onclick=()=>{cart.splice(idx,1);renderCart();};div.appendChild(btn);cartDiv.appendChild(div);});totalPriceSpan.textContent=total.toFixed(2);}
+checkoutBtn.onclick=()=>{if(!cart.length)return;const total=cart.reduce((sum,c)=>sum+products[c.index].price*c.qty,0);orders.push({id:'O'+Date.now(),time:new Date().toLocaleString(),total:total.toFixed(2),status:'已完成'});cart=[];renderCart();renderOrders();alert('支付成功');};
+
+// 库存
+const inventoryTable=document.querySelector('#inventoryTable tbody');
+function renderInventory(){inventoryTable.innerHTML='';products.forEach((p,i)=>{let cls='inventory-ok';if(p.stock<=20)cls='inventory-low';else if(p.stock<=40)cls='inventory-mid';const tr=document.createElement('tr');tr.innerHTML=`<td>${i}</td><td>${p.name}</td><td>${p.stock}</td><td class="${cls}">${p.stock}</td>`;inventoryTable.appendChild(tr);});}
+
+// 数据看板
+const ctx=document.getElementById('salesChart').getContext('2d');
+let salesChart=new Chart(ctx,{type:'bar',data:{labels:[],datasets:[{label:'销售额',data:[],backgroundColor:'#ffd400'}]}});
+function updateChart(){const sums={};orders.forEach(o=>{const d=o.time.split(' ')[0];sums[d]=(sums[d]||0)+parseFloat(o.total);});salesChart.data.labels=Object.keys(sums);salesChart.data.datasets[0].data=Object.values(sums);salesChart.update();}
+
+// AI
+const askBtn=document.getElementById('askAi');const aiInput=document.getElementById('aiInput');const aiResp=document.getElementById('aiResponse');const API_KEY='sk-JQqwqFeMGUGOtJM6PGy2N3KxuPGEtvbLEyBNoZOurLSKh3Fz';
+askBtn.onclick=async()=>{aiResp.textContent='加载中...';try{const res=await fetch('https://xinyiyuan1688.top/v1',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+API_KEY},body:JSON.stringify({model:'o3',messages:[{role:'user',content:aiInput.value}]})});const data=await res.json();aiResp.textContent=JSON.stringify(data);}catch(e){aiResp.textContent='请求失败';}};
+
 renderProducts();
 renderCategories();
 renderMembers();
 renderOrders();
 renderInventory();
 renderProductGrid();
+updateChart();
 </script>
 </body>
 </html>
