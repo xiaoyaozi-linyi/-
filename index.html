@@ -19,6 +19,7 @@
         table{width:100%;border-collapse:collapse;margin-top:10px}
         th,td{border:1px solid #ccc;padding:5px;text-align:left}
         #productGrid{display:flex;flex-wrap:wrap;gap:5px}
+        #productGridAdmin{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
         .product-item{border:1px solid #ccc;padding:5px;width:80px;cursor:pointer;text-align:center}
         .inventory-ok{background:#e8f5e9}
         .inventory-mid{background:#fffde7}
@@ -62,6 +63,7 @@
                 <thead><tr><th>名称</th><th>价格</th><th>分类</th><th>库存</th><th>操作</th></tr></thead>
                 <tbody></tbody>
             </table>
+            <div id="productGridAdmin"></div>
         </section>
         <section id="orders">
             <h2>订单管理</h2>
@@ -135,9 +137,42 @@ toggleBtn.addEventListener('click',()=>{sidebar.classList.toggle('compact');});
 const productForm=document.getElementById('productForm');
 const cancelEdit=document.getElementById('cancelEdit');
 const productTable=document.querySelector('#productTable tbody');
-function renderProducts(){productTable.innerHTML='';products.forEach((p,i)=>{const tr=document.createElement('tr');tr.innerHTML=`<td>${p.name}</td><td>${p.price}</td><td>${p.category}</td><td>${p.stock}</td><td><button data-edit="${i}">编辑</button> <button data-del="${i}">删除</button></td>`;productTable.appendChild(tr);});localStorage.setItem('products',JSON.stringify(products));renderProductGrid();renderInventory();}
+const productGridAdmin=document.getElementById('productGridAdmin');
+function renderProducts(){
+    productTable.innerHTML='';
+    productGridAdmin.innerHTML='';
+    products.forEach((p,i)=>{
+        const tr=document.createElement('tr');
+        tr.innerHTML=`<td>${p.name}</td><td>${p.price}</td><td>${p.category}</td><td>${p.stock}</td><td><button data-edit="${i}">编辑</button> <button data-del="${i}">删除</button></td>`;
+        productTable.appendChild(tr);
+        const card=document.createElement('div');
+        card.className='product-item';
+        card.innerHTML=`<strong>${p.name}</strong><br>${p.price}元<br>${p.category}<br>库存:${p.stock}<br><button data-edit="${i}">编辑</button> <button data-del="${i}">删除</button>`;
+        productGridAdmin.appendChild(card);
+    });
+    localStorage.setItem('products',JSON.stringify(products));
+    renderProductGrid();
+    renderInventory();
+}
 productForm.addEventListener('submit',e=>{e.preventDefault();const obj={name:pname.value,price:+pprice.value,category:pcategory.value,stock:+pstock.value};if(editingIndex!==null){products[editingIndex]=obj;editingIndex=null;cancelEdit.classList.add('hidden');}else{products.push(obj);}productForm.reset();renderProducts();});
-productTable.addEventListener('click',e=>{if(e.target.dataset.del){products.splice(e.target.dataset.del,1);renderProducts();}if(e.target.dataset.edit){const p=products[e.target.dataset.edit];pname.value=p.name;pprice.value=p.price;pcategory.value=p.category;pstock.value=p.stock;editingIndex=e.target.dataset.edit;cancelEdit.classList.remove('hidden');showSection('products');}});
+function handleProductAction(e){
+    if(e.target.dataset.del){
+        products.splice(e.target.dataset.del,1);
+        renderProducts();
+    }
+    if(e.target.dataset.edit){
+        const p=products[e.target.dataset.edit];
+        pname.value=p.name;
+        pprice.value=p.price;
+        pcategory.value=p.category;
+        pstock.value=p.stock;
+        editingIndex=e.target.dataset.edit;
+        cancelEdit.classList.remove('hidden');
+        showSection('products');
+    }
+}
+productTable.addEventListener('click',handleProductAction);
+productGridAdmin.addEventListener('click',handleProductAction);
 cancelEdit.addEventListener('click',()=>{editingIndex=null;productForm.reset();cancelEdit.classList.add('hidden');});
 
 // 分类管理
