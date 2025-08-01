@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POS System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <nav id="sidebar" class="expanded">
+            <button id="toggle">☰</button>
+            <ul>
+                <li data-target="dashboard">数据看板</li>
+                <li data-target="products">商品管理</li>
+                <li data-target="orders">订单管理</li>
+                <li data-target="categories">分类管理</li>
+                <li data-target="members">会员管理</li>
+                <li data-target="cashier">收银台</li>
+                <li data-target="inventory">进销存</li>
+                <li data-target="ai">AI经营策略</li>
+            </ul>
+        </nav>
+        <main id="content">
+            <section id="dashboard" class="active">
+                <canvas id="salesChart"></canvas>
+            </section>
+            <section id="products">
+                <h2>商品管理</h2>
+                <form id="productForm">
+                    <input type="text" id="pname" placeholder="名称" required>
+                    <input type="number" id="pprice" placeholder="价格" required>
+                    <input type="text" id="pcategory" placeholder="分类" required>
+                    <input type="number" id="pstock" placeholder="库存" required>
+                    <button type="submit">新增商品</button>
+                </form>
+                <table id="productTable">
+                    <thead><tr><th>名称</th><th>价格</th><th>分类</th><th>库存</th><th>操作</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+            <section id="orders">
+                <h2>订单管理</h2>
+                <table id="orderTable">
+                    <thead><tr><th>订单号</th><th>时间</th><th>金额</th><th>状态</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+            <section id="categories">
+                <h2>分类管理</h2>
+                <form id="categoryForm">
+                    <input type="text" id="cname" placeholder="分类名" required>
+                    <button type="submit">新增分类</button>
+                </form>
+                <ul id="categoryList"></ul>
+            </section>
+            <section id="members">
+                <h2>会员管理</h2>
+                <form id="memberForm">
+                    <input type="text" id="mname" placeholder="姓名" required>
+                    <input type="tel" id="mphone" placeholder="电话" required>
+                    <button type="submit">新增会员</button>
+                </form>
+                <table id="memberTable">
+                    <thead><tr><th>姓名</th><th>电话</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+            <section id="cashier">
+                <h2>收银台</h2>
+                <div id="productGrid"></div>
+                <div id="cart"></div>
+            </section>
+            <section id="inventory">
+                <h2>进销存管理</h2>
+                <table id="inventoryTable">
+                    <thead><tr><th>ID</th><th>名称</th><th>库存</th><th>状态</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+            <section id="ai">
+                <h2>AI经营策略</h2>
+                <textarea id="aiInput" placeholder="输入问题"></textarea>
+                <button id="askAi">发送</button>
+                <pre id="aiResponse"></pre>
+            </section>
+        </main>
+    </div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
